@@ -1,19 +1,19 @@
 package com.google.firebase.samples.apps.mlkit.common;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Environment;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.ml.common.FirebaseMLException;
 import com.google.firebase.ml.common.modeldownload.FirebaseLocalModel;
 import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions;
@@ -31,14 +31,34 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Random;
 
 public class CustomModelActivity extends AppCompatActivity {
     private final String TAG = "CustomModelActivity";
-    public CustomModelActivity(){
+    private final int IMG_DIM = 64;
+    private final int IMG_COLOR_CHANNEL = 3;
+    private final int NUMBER_CLASSES = 101;
+    Activity context;
+    private ArrayList<String> labelList = new ArrayList<>();
+
+    public CustomModelActivity(Activity livePreviewActivity) {
         configureLocalModelSource();
         configureHostedModelSource();
+        context = livePreviewActivity;
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(
+                    new InputStreamReader(context.getAssets().open("classes.txt")));
+
+            // do reading, usually loop until end of file reading
+            String mLine;
+            while ((mLine = reader.readLine()) != null) {
+                labelList.add(mLine);
+            }
+        } catch (IOException e) {
+            Log.e(TAG, e.toString());
+        }
     }
 
     private void configureHostedModelSource() {
@@ -55,7 +75,7 @@ public class CustomModelActivity extends AppCompatActivity {
 
         // Build a remote model source object by specifying the name you assigned the model
         // when you uploaded it in the Firebase console.
-        FirebaseRemoteModel cloudSource = new FirebaseRemoteModel.Builder("my_cloud_model")
+        FirebaseRemoteModel cloudSource = new FirebaseRemoteModel.Builder("food-recognition")
                 .enableModelUpdates(true)
                 .setInitialDownloadConditions(conditions)
                 .setUpdatesDownloadConditions(conditions)
@@ -68,7 +88,8 @@ public class CustomModelActivity extends AppCompatActivity {
         // [START mlkit_local_model_source]
         FirebaseLocalModel localSource =
                 new FirebaseLocalModel.Builder("my_local_model")  // Assign a name to this model
-                        .setAssetFilePath("inception_v3.tflite")
+//                        .setAssetFilePath("inception_v3.tflite")
+                        .setAssetFilePath("model_conv_net.tflite")
                         .build();
         FirebaseModelManager.getInstance().registerLocalModel(localSource);
         // [END mlkit_local_model_source]
@@ -77,7 +98,7 @@ public class CustomModelActivity extends AppCompatActivity {
     public FirebaseModelInterpreter createInterpreter() throws FirebaseMLException {
         // [START mlkit_create_interpreter]
         FirebaseModelOptions options = new FirebaseModelOptions.Builder()
-                .setRemoteModelName("my_cloud_model")
+                .setRemoteModelName("food-recognition")
                 .setLocalModelName("my_local_model")
                 .build();
         FirebaseModelInterpreter firebaseInterpreter =
@@ -89,10 +110,11 @@ public class CustomModelActivity extends AppCompatActivity {
 
     private FirebaseModelInputOutputOptions createInputOutputOptions() throws FirebaseMLException {
         // [START mlkit_create_io_options]
+
         FirebaseModelInputOutputOptions inputOutputOptions =
                 new FirebaseModelInputOutputOptions.Builder()
-                        .setInputFormat(0, FirebaseModelDataType.FLOAT32, new int[]{1, 229, 229, 3})
-                        .setOutputFormat(0, FirebaseModelDataType.FLOAT32, new int[]{1, 51})
+                        .setInputFormat(0, FirebaseModelDataType.FLOAT32, new int[]{1, IMG_DIM, IMG_DIM, IMG_COLOR_CHANNEL})
+                        .setOutputFormat(0, FirebaseModelDataType.FLOAT32, new int[]{1, NUMBER_CLASSES})
                         .build();
         // [END mlkit_create_io_options]
 
@@ -102,12 +124,12 @@ public class CustomModelActivity extends AppCompatActivity {
     private float[][][][] bitmapToInputArray(Bitmap bitmap) {
         // [START mlkit_bitmap_input]
 //        Bitmap bitmap = getYourInputImage();
-        bitmap = Bitmap.createScaledBitmap(bitmap, 229, 229, true);
+        bitmap = Bitmap.createScaledBitmap(bitmap, IMG_DIM, IMG_DIM, true);
 //        saveBitmapToStorage(bitmap);
         int batchNum = 0;
-        float[][][][] input = new float[1][229][229][3];
-        for (int x = 0; x < 229; x++) {
-            for (int y = 0; y < 229; y++) {
+        float[][][][] input = new float[1][IMG_DIM][IMG_DIM][IMG_COLOR_CHANNEL];
+        for (int x = 0; x < IMG_DIM; x++) {
+            for (int y = 0; y < IMG_DIM; y++) {
                 int pixel = bitmap.getPixel(x, y);
                 // Normalize channel values to [-1.0, 1.0]. This requirement varies by
                 // model. For example, some models might require values to be normalized
@@ -143,7 +165,10 @@ public class CustomModelActivity extends AppCompatActivity {
                                 // [START mlkit_read_result]
                                 float[][] output = result.getOutput(0);
                                 float[] probabilities = output[0];
-                                Log.d(TAG, Arrays.toString(probabilities));
+//                                Log.d(TAG, Arrays.toString(probabilities));
+                                int indexHighestProbability = getIndexWithHighestProbability(probabilities);
+                                String label = labelList.get(indexHighestProbability);
+                                Log.d(TAG, label + " " + probabilities[indexHighestProbability]);
                                 // [END mlkit_read_result]
                                 // [END_EXCLUDE]
                             }
@@ -159,6 +184,18 @@ public class CustomModelActivity extends AppCompatActivity {
                             }
                         });
         // [END mlkit_run_inference]
+    }
+
+    private int getIndexWithHighestProbability(float[] probabilitiesArray) {
+        float highestValue = probabilitiesArray[0];
+        int index = 0;
+        for (int i = 1; i < NUMBER_CLASSES; ++i) {
+            if (probabilitiesArray[i] > highestValue) {
+                highestValue = probabilitiesArray[i];
+                index = i;
+            }
+        }
+        return index;
     }
 
     public void useInferenceResult(float[] probabilities) throws IOException {

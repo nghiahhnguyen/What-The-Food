@@ -98,8 +98,8 @@ public final class LivePreviewActivity extends AppCompatActivity
     private GraphicOverlay graphicOverlay;
     private String selectedModel = FACE_CONTOUR;
 
-    private CustomModelActivity mCustomModelActivity = null;
-    private FirebaseModelInterpreter firebaseModelInterpreter = null;
+//    private CustomModelActivity mCustomModelActivity = null;
+//    private FirebaseModelInterpreter firebaseModelInterpreter = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -142,7 +142,7 @@ public final class LivePreviewActivity extends AppCompatActivity
             facingSwitch.setVisibility(View.GONE);
         }
 
-        mCustomModelActivity = new CustomModelActivity();
+//        mCustomModelActivity = new CustomModelActivity();
 
         if (allPermissionsGranted()) {
             createCameraSource(selectedModel);
@@ -169,7 +169,7 @@ public final class LivePreviewActivity extends AppCompatActivity
             Log.e(TAG, e.toString());
         }
 
-        firebaseModelInterpreter = mCustomModelActivity.createInterpreter();
+//        firebaseModelInterpreter = mCustomModelActivity.createInterpreter();
     }
 
     @Override
@@ -241,7 +241,7 @@ public final class LivePreviewActivity extends AppCompatActivity
                                     .enableMultipleObjects()
                                     .enableClassification().build();
                     cameraSource.setMachineLearningFrameProcessor(
-                            new ObjectDetectorProcessor(objectDetectorOptions));
+                            new ObjectDetectorProcessor(objectDetectorOptions, LivePreviewActivity.this));
                     break;
                 case BARCODE_DETECTION:
                     Log.i(TAG, "Using Barcode Detector Processor");

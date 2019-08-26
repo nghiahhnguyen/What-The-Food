@@ -1,5 +1,6 @@
 package com.google.firebase.samples.apps.mlkit.java.objectdetection;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.AsyncTask;
@@ -38,9 +39,9 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
 
     private FirebaseModelInterpreter mInterpreter = null;
 
-    public ObjectDetectorProcessor(FirebaseVisionObjectDetectorOptions options) throws FirebaseMLException {
+    public ObjectDetectorProcessor(FirebaseVisionObjectDetectorOptions options, Activity livePreviewActivity) throws FirebaseMLException {
         detector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options);
-        customModelActivity = new CustomModelActivity();
+        customModelActivity = new CustomModelActivity(livePreviewActivity);
         mInterpreter = customModelActivity.createInterpreter();
     }
 
