@@ -83,6 +83,7 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
                     try {
                         customModelActivity.runInference(croppedBitmap);
                     } catch (FirebaseMLException e) {
+                        Log.d(TAG, e.toString());
                         e.printStackTrace();
                     }
                 }

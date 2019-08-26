@@ -142,6 +142,8 @@ public final class LivePreviewActivity extends AppCompatActivity
             facingSwitch.setVisibility(View.GONE);
         }
 
+        mCustomModelActivity = new CustomModelActivity();
+
         if (allPermissionsGranted()) {
             createCameraSource(selectedModel);
         } else {

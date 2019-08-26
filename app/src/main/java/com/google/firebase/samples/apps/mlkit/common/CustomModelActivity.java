@@ -1,10 +1,14 @@
 package com.google.firebase.samples.apps.mlkit.common;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.os.Environment;
 import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -23,9 +27,12 @@ import com.google.firebase.ml.custom.FirebaseModelOptions;
 import com.google.firebase.ml.custom.FirebaseModelOutputs;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+import java.util.Random;
 
 public class CustomModelActivity extends AppCompatActivity {
     private final String TAG = "CustomModelActivity";
@@ -96,7 +103,7 @@ public class CustomModelActivity extends AppCompatActivity {
         // [START mlkit_bitmap_input]
 //        Bitmap bitmap = getYourInputImage();
         bitmap = Bitmap.createScaledBitmap(bitmap, 229, 229, true);
-
+//        saveBitmapToStorage(bitmap);
         int batchNum = 0;
         float[][][][] input = new float[1][229][229][3];
         for (int x = 0; x < 229; x++) {
@@ -168,5 +175,29 @@ public class CustomModelActivity extends AppCompatActivity {
     private Bitmap getYourInputImage() {
         // This method is just for show
         return Bitmap.createBitmap(0, 0, Bitmap.Config.ALPHA_8);
+    }
+
+    private void saveBitmapToStorage(Bitmap bitmap) {
+        String root = Environment.getExternalStorageDirectory().toString();
+        File myDir = new File(root + "/req_images");
+        myDir.mkdirs();
+        Random generator = new Random();
+        int n = 10000;
+        n = generator.nextInt(n);
+        String fname = "Image-" + n + ".jpg";
+        File file = new File(myDir, fname);
+        Log.i(TAG, "" + file);
+        if (file.exists())
+            file.delete();
+        try {
+            FileOutputStream out = new FileOutputStream(file);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+            sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())));
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 }
