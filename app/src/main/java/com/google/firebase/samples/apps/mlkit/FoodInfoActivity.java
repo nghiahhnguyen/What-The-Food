@@ -50,7 +50,9 @@ import java.util.Map;
 public class FoodInfoActivity extends AppCompatActivity {
 
     CarouselView carouselView;
+    // Add your customer key
     final String CUSTOMER_KEY = "cc0fe-996d8-09c4f-24264-ecd27-ffdc2";
+    // Add your customer secret
     final String CUSTOMER_SECRET = "58c67-ecd9d-c4b88-aed00-839f4-aad86";
     String query;
     final String sort = "popular";
