@@ -1,6 +1,7 @@
 package com.google.firebase.samples.apps.mlkit.java.objectdetection;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.util.Log;
@@ -42,9 +43,12 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
 
     private CustomModelActivity customModelActivity;
 
+    Context context;
+
     public ObjectDetectorProcessor(FirebaseVisionObjectDetectorOptions options, Activity livePreviewActivity) throws FirebaseMLException {
         detector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options);
         customModelActivity = new CustomModelActivity(livePreviewActivity);
+        context = livePreviewActivity;
 //        mInterpreter = customModelActivity.createInterpreter();
     }
 
@@ -70,6 +74,8 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
             @NonNull FrameMetadata frameMetadata,
             @NonNull final GraphicOverlay graphicOverlay) {
         graphicOverlay.clear();
+        graphicOverlay.setContext(context);
+        graphicOverlay.setObjects(results);
         if (originalCameraImage != null) {
             CameraImageGraphic imageGraphic = new CameraImageGraphic(graphicOverlay, originalCameraImage);
             graphicOverlay.add(imageGraphic);
@@ -78,7 +84,8 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
 
         CompletionService completionService = new ExecutorCompletionService(Executors.newFixedThreadPool(5));
         int remainingFutures = 0;
-        for (final FirebaseVisionObject object : results) {
+        for (int i = 0; i < results.size(); ++i) {
+            final FirebaseVisionObject object = results.get(i);
             ++remainingFutures;
             // Crop the bounding box of the detected object
             Rect croppedRectangle = object.getBoundingBox();
@@ -125,7 +132,7 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
 //                Log.d(TAG, e.toString());
 //                e.printStackTrace();
 //            }
-            CallableInference callableInference = new CallableInference(croppedBitmap, graphicOverlay, object);
+            CallableInference callableInference = new CallableInference(croppedBitmap, graphicOverlay, object, i);
             completionService.submit(callableInference);
         }
         while (remainingFutures > 0) {
@@ -148,11 +155,13 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
         private final Bitmap croppedBitmap;
         private final GraphicOverlay graphicOverlay;
         private final FirebaseVisionObject object;
+        private final int index;
 
-        CallableInference(Bitmap croppedBitmap, final GraphicOverlay graphicOverlay, final FirebaseVisionObject object) {
+        CallableInference(Bitmap croppedBitmap, final GraphicOverlay graphicOverlay, final FirebaseVisionObject object, int index) {
             this.croppedBitmap = croppedBitmap;
             this.graphicOverlay = graphicOverlay;
             this.object = object;
+            this.index = index;
         }
 
         @Override
@@ -164,7 +173,8 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
                                     @Override
                                     public void onSuccess(List<String> strings) {
                                         String label = strings.get(0);
-                                        Log.d(TAG, label);
+//                                        Log.d(TAG, label);
+                                        graphicOverlay.setLabel(index, label);
                                         ObjectGraphic objectGraphic = new ObjectGraphic(graphicOverlay, object, label);
                                         graphicOverlay.add(objectGraphic);
                                     }
