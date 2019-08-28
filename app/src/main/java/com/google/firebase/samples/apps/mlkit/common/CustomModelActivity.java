@@ -12,8 +12,9 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.ml.common.FirebaseMLException;
 import com.google.firebase.ml.common.modeldownload.FirebaseLocalModel;
 import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions;
@@ -32,6 +33,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class CustomModelActivity extends AppCompatActivity {
@@ -148,31 +150,16 @@ public class CustomModelActivity extends AppCompatActivity {
         return input;
     }
 
-    public void runInference(Bitmap bitmap) throws FirebaseMLException {
-        FirebaseModelInterpreter firebaseInterpreter = createInterpreter();
+    public Task<List<String>> runInference(Bitmap bitmap) throws FirebaseMLException {
+
+        final FirebaseModelInterpreter firebaseInterpreter = createInterpreter();
         float[][][][] input = bitmapToInputArray(bitmap);
         FirebaseModelInputOutputOptions inputOutputOptions = createInputOutputOptions();
         // [START mlkit_run_inference]
         FirebaseModelInputs inputs = new FirebaseModelInputs.Builder()
                 .add(input)  // add() as many input arrays as your model requires
                 .build();
-        firebaseInterpreter.run(inputs, inputOutputOptions)
-                .addOnSuccessListener(
-                        new OnSuccessListener<FirebaseModelOutputs>() {
-                            @Override
-                            public void onSuccess(FirebaseModelOutputs result) {
-                                // [START_EXCLUDE]
-                                // [START mlkit_read_result]
-                                float[][] output = result.getOutput(0);
-                                float[] probabilities = output[0];
-//                                Log.d(TAG, Arrays.toString(probabilities));
-                                int indexHighestProbability = getIndexWithHighestProbability(probabilities);
-                                String label = labelList.get(indexHighestProbability);
-                                Log.d(TAG, label + " " + probabilities[indexHighestProbability]);
-                                // [END mlkit_read_result]
-                                // [END_EXCLUDE]
-                            }
-                        })
+        return firebaseInterpreter.run(inputs, inputOutputOptions)
                 .addOnFailureListener(
                         new OnFailureListener() {
                             @Override
@@ -182,8 +169,39 @@ public class CustomModelActivity extends AppCompatActivity {
                                 Log.e(TAG, e.toString());
                                 e.printStackTrace();
                             }
+                        })
+                .continueWith(
+                        new Continuation<FirebaseModelOutputs, List<String>>() {
+                            @Override
+                            public List<String> then(Task<FirebaseModelOutputs> task) throws Exception {
+                                float[][] output = task.getResult().getOutput(0);
+                                float[] probabilities = output[0];
+//                                Log.d(TAG, Arrays.toString(probabilities));
+                                int indexHighestProbability = getIndexWithHighestProbability(probabilities);
+                                String label = labelList.get(indexHighestProbability);
+                                Log.d(TAG, label + " " + probabilities[indexHighestProbability]);
+                                List<String> result = new ArrayList<>();
+                                result.add(label);
+                                return result;
+                            }
                         });
-        // [END mlkit_run_inference]
+
+//                        .addOnSuccessListener(
+//                        new OnSuccessListener<FirebaseModelOutputs>() {
+//                            @Override
+//                            public void onSuccess(FirebaseModelOutputs result) {
+//                                float[][] output = result.getOutput(0);
+//                                float[] probabilities = output[0];
+////                                Log.d(TAG, Arrays.toString(probabilities));
+//                                int indexHighestProbability = getIndexWithHighestProbability(probabilities);
+//                                String label = labelList.get(indexHighestProbability);
+//                                Log.d(TAG, label + " " + probabilities[indexHighestProbability]);
+//                            }
+//                        })
+//        // [END mlkit_run_inference]
+//        wait(1000000);
+//        Log.d(TAG, ret[0]);
+//        return ret;
     }
 
     private int getIndexWithHighestProbability(float[] probabilitiesArray) {

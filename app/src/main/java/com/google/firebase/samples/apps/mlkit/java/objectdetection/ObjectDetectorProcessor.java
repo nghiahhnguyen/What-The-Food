@@ -3,12 +3,13 @@ package com.google.firebase.samples.apps.mlkit.java.objectdetection;
 import android.app.Activity;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.ml.common.FirebaseMLException;
 import com.google.firebase.ml.custom.FirebaseModelInterpreter;
@@ -25,6 +26,11 @@ import com.google.firebase.samples.apps.mlkit.java.VisionProcessorBase;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * A processor to run object detector.
@@ -65,38 +71,122 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
             @Nullable Bitmap originalCameraImage,
             @NonNull List<FirebaseVisionObject> results,
             @NonNull FrameMetadata frameMetadata,
-            @NonNull GraphicOverlay graphicOverlay) {
+            @NonNull final GraphicOverlay graphicOverlay) {
         graphicOverlay.clear();
         if (originalCameraImage != null) {
             CameraImageGraphic imageGraphic = new CameraImageGraphic(graphicOverlay, originalCameraImage);
             graphicOverlay.add(imageGraphic);
         }
         Log.d(TAG, "Number of Object" + results.size());
-        for (FirebaseVisionObject object : results) {
-            ObjectGraphic objectGraphic = new ObjectGraphic(graphicOverlay, object);
+
+        CompletionService completionService = new ExecutorCompletionService(Executors.newFixedThreadPool(4));
+        int remainingFutures = 0;
+        for (final FirebaseVisionObject object : results) {
+            ++remainingFutures;
+            // Crop the bounding box of the detected object
             Rect croppedRectangle = object.getBoundingBox();
             assert originalCameraImage != null;
             final Bitmap croppedBitmap = Bitmap.createBitmap(originalCameraImage,
                     croppedRectangle.left, croppedRectangle.top, croppedRectangle.width(), croppedRectangle.height());
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        customModelActivity.runInference(croppedBitmap);
-                    } catch (FirebaseMLException e) {
-                        Log.d(TAG, e.toString());
-                        e.printStackTrace();
-                    }
-                }
-            });
-            graphicOverlay.add(objectGraphic);
-        }
+//            AsyncTask.execute(new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        customModelActivity.runInference(croppedBitmap);
+//                    } catch (FirebaseMLException e) {
+//                        Log.d(TAG, e.toString());
+//                        e.printStackTrace();
+//                    }
+//                }
+//            });
 
+            // Run inference with the cropped bitmap
+//            final String label = null;
+//            try {
+//                customModelActivity.runInference(croppedBitmap)
+//                        .addOnSuccessListener(
+//                                new OnSuccessListener<List<String>>() {
+//                                    @Override
+//                                    public void onSuccess(List<String> strings) {
+//                                        String label = strings.get(0);
+//                                        Log.d(TAG, label);
+//                                        ObjectGraphic objectGraphic = new ObjectGraphic(graphicOverlay, object, label);
+//                                        graphicOverlay.add(objectGraphic);
+//                                    }
+//                                }
+//                        )
+//                        .addOnFailureListener(
+//                                new OnFailureListener() {
+//                                    @Override
+//                                    public void onFailure(@NonNull Exception e) {
+//                                        Log.d(TAG, "Custom classifier failed: " + e);
+//                                        e.printStackTrace();
+//                                    }
+//                                }
+//                        );
+//            } catch (FirebaseMLException e) {
+//                Log.d(TAG, e.toString());
+//                e.printStackTrace();
+//            }
+            CallableInference callableInference = new CallableInference(croppedBitmap, graphicOverlay, object);
+            completionService.submit(callableInference);
+        }
+        while (remainingFutures > 0) {
+            try {
+                Future completedFuture = completionService.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            --remainingFutures;
+        }
         graphicOverlay.postInvalidate();
     }
 
     @Override
     protected void onFailure(@NonNull Exception e) {
         Log.e(TAG, "Object detection failed!", e);
+    }
+
+    class CallableInference implements Callable<Void> {
+        private final Bitmap croppedBitmap;
+        private final GraphicOverlay graphicOverlay;
+        private final FirebaseVisionObject object;
+
+        public CallableInference(Bitmap croppedBitmap, final GraphicOverlay graphicOverlay, final FirebaseVisionObject object) {
+            this.croppedBitmap = croppedBitmap;
+            this.graphicOverlay = graphicOverlay;
+            this.object = object;
+        }
+
+        @Override
+        public Void call() throws Exception {
+            try {
+                customModelActivity.runInference(croppedBitmap)
+                        .addOnSuccessListener(
+                                new OnSuccessListener<List<String>>() {
+                                    @Override
+                                    public void onSuccess(List<String> strings) {
+                                        String label = strings.get(0);
+                                        Log.d(TAG, label);
+                                        ObjectGraphic objectGraphic = new ObjectGraphic(graphicOverlay, object, label);
+                                        graphicOverlay.add(objectGraphic);
+                                    }
+                                }
+                        )
+                        .addOnFailureListener(
+                                new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Log.d(TAG, "Custom classifier failed: " + e);
+                                        e.printStackTrace();
+                                    }
+                                }
+                        );
+            } catch (FirebaseMLException e) {
+                Log.d(TAG, e.toString());
+                e.printStackTrace();
+            }
+            return null;
+        }
     }
 }

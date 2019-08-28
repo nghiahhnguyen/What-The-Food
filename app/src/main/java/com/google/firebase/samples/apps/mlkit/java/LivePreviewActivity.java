@@ -16,9 +16,7 @@ package com.google.firebase.samples.apps.mlkit.java;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.hardware.Camera;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -37,24 +35,11 @@ import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.annotation.KeepName;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.ml.common.FirebaseMLException;
-import com.google.firebase.ml.common.modeldownload.FirebaseLocalModel;
-import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions;
-import com.google.firebase.ml.common.modeldownload.FirebaseModelManager;
-import com.google.firebase.ml.common.modeldownload.FirebaseRemoteModel;
-import com.google.firebase.ml.custom.FirebaseModelDataType;
-import com.google.firebase.ml.custom.FirebaseModelInputOutputOptions;
-import com.google.firebase.ml.custom.FirebaseModelInputs;
-import com.google.firebase.ml.custom.FirebaseModelInterpreter;
-import com.google.firebase.ml.custom.FirebaseModelOptions;
-import com.google.firebase.ml.custom.FirebaseModelOutputs;
 import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions;
 import com.google.firebase.samples.apps.mlkit.R;
 import com.google.firebase.samples.apps.mlkit.common.CameraSource;
 import com.google.firebase.samples.apps.mlkit.common.CameraSourcePreview;
-import com.google.firebase.samples.apps.mlkit.common.CustomModelActivity;
 import com.google.firebase.samples.apps.mlkit.common.GraphicOverlay;
 import com.google.firebase.samples.apps.mlkit.java.automl.AutoMLImageLabelerProcessor;
 import com.google.firebase.samples.apps.mlkit.java.barcodescanning.BarcodeScanningProcessor;
@@ -69,7 +54,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -117,15 +101,15 @@ public final class LivePreviewActivity extends AppCompatActivity
         }
         Spinner spinner = findViewById(R.id.spinner);
         List<String> options = new ArrayList<>();
-        options.add(FACE_CONTOUR);
-        options.add(FACE_DETECTION);
-        options.add(AUTOML_IMAGE_LABELING);
+//        options.add(FACE_CONTOUR);
+//        options.add(FACE_DETECTION);
+//        options.add(AUTOML_IMAGE_LABELING);
         options.add(OBJECT_DETECTION);
-        options.add(TEXT_DETECTION);
-        options.add(BARCODE_DETECTION);
-        options.add(IMAGE_LABEL_DETECTION);
-        options.add(CLASSIFICATION_QUANT);
-        options.add(CLASSIFICATION_FLOAT);
+//        options.add(TEXT_DETECTION);
+//        options.add(BARCODE_DETECTION);
+//        options.add(IMAGE_LABEL_DETECTION);
+//        options.add(CLASSIFICATION_QUANT);
+//        options.add(CLASSIFICATION_FLOAT);
         // Creating adapter for spinner
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(this, R.layout.spinner_style,
                 options);
