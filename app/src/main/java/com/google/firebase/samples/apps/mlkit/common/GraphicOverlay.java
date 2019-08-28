@@ -42,7 +42,7 @@ import java.util.List;
  *       coordinate from the preview's coordinate system to the view coordinate system.
  * </ol>
  */
-public class GraphicOverlay extends View {
+public class GraphicOverlay extends View  {
   private final Object lock = new Object();
   private int previewWidth;
   private float widthScaleFactor = 1.0f;
