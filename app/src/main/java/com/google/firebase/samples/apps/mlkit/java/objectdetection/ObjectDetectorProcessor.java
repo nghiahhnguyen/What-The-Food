@@ -12,7 +12,6 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.ml.common.FirebaseMLException;
-import com.google.firebase.ml.custom.FirebaseModelInterpreter;
 import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.objects.FirebaseVisionObject;
@@ -41,14 +40,12 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
 
     private final FirebaseVisionObjectDetector detector;
 
-    private CustomModelActivity customModelActivity = null;
-
-    private FirebaseModelInterpreter mInterpreter = null;
+    private CustomModelActivity customModelActivity;
 
     public ObjectDetectorProcessor(FirebaseVisionObjectDetectorOptions options, Activity livePreviewActivity) throws FirebaseMLException {
         detector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options);
         customModelActivity = new CustomModelActivity(livePreviewActivity);
-        mInterpreter = customModelActivity.createInterpreter();
+//        mInterpreter = customModelActivity.createInterpreter();
     }
 
     @Override
@@ -79,7 +76,7 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
         }
         Log.d(TAG, "Number of Object" + results.size());
 
-        CompletionService completionService = new ExecutorCompletionService(Executors.newFixedThreadPool(4));
+        CompletionService completionService = new ExecutorCompletionService(Executors.newFixedThreadPool(5));
         int remainingFutures = 0;
         for (final FirebaseVisionObject object : results) {
             ++remainingFutures;
@@ -152,7 +149,7 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
         private final GraphicOverlay graphicOverlay;
         private final FirebaseVisionObject object;
 
-        public CallableInference(Bitmap croppedBitmap, final GraphicOverlay graphicOverlay, final FirebaseVisionObject object) {
+        CallableInference(Bitmap croppedBitmap, final GraphicOverlay graphicOverlay, final FirebaseVisionObject object) {
             this.croppedBitmap = croppedBitmap;
             this.graphicOverlay = graphicOverlay;
             this.object = object;
