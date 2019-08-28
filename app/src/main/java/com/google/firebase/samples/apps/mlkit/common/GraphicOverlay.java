@@ -17,11 +17,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
 import com.google.android.gms.vision.CameraSource;
 import com.google.firebase.ml.vision.objects.FirebaseVisionObject;
+import com.google.firebase.samples.apps.mlkit.FoodInfoActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +48,7 @@ import java.util.List;
  * </ol>
  */
 public class GraphicOverlay extends View implements View.OnTouchListener {
+    private static final String TAG = "GraphicOverlay";
     private final Object lock = new Object();
     private final List<Graphic> graphics = new ArrayList<>();
     private int previewWidth;
@@ -54,15 +57,23 @@ public class GraphicOverlay extends View implements View.OnTouchListener {
     private float heightScaleFactor = 1.0f;
     private int facing = CameraSource.CAMERA_FACING_BACK;
     private List<FirebaseVisionObject> objects = null;
-    private List<String> labels = new ArrayList<>();
+    private ArrayList<String> labels;
     private Context context;
 
     public GraphicOverlay(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
+    public void initializeLabels() {
+        labels = new ArrayList<>();
+        for (int i = 0; i < 6; ++i) {
+            labels.add("Unknown");
+        }
+    }
+
     @Override
     public boolean onTouch(View v, MotionEvent event) {
+        Log.d(TAG, "onTouch");
         float x = event.getX(), y = event.getY();
         for (int i = 0; i < objects.size(); ++i) {
             FirebaseVisionObject object = objects.get(i);

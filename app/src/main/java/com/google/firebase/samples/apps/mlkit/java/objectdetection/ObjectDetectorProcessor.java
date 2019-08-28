@@ -76,6 +76,7 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
         graphicOverlay.clear();
         graphicOverlay.setContext(context);
         graphicOverlay.setObjects(results);
+        graphicOverlay.initializeLabels();
         if (originalCameraImage != null) {
             CameraImageGraphic imageGraphic = new CameraImageGraphic(graphicOverlay, originalCameraImage);
             graphicOverlay.add(imageGraphic);
