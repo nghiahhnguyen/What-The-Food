@@ -7,15 +7,16 @@
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
         <option name="modules">
           <set>
-            <option value="$PROJECT_DIR$/../internal/chooserx" />
-            <option value="$PROJECT_DIR$/../internal/lint" />
-            <option value="$PROJECT_DIR$/../internal/lintchecks" />
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
             <option value="$PROJECT_DIR$/internal" />
+            <option value="$PROJECT_DIR$/internal/chooserx" />
+            <option value="$PROJECT_DIR$/internal/lint" />
+            <option value="$PROJECT_DIR$/internal/lintchecks" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
+        <option name="testRunner" value="PLATFORM" />
         <option name="useQualifiedModuleNames" value="true" />
       </GradleProjectSettings>
     </option>
