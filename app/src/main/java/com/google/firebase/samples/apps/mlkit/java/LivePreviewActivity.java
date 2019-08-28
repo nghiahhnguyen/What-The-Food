@@ -41,14 +41,7 @@ import com.google.firebase.samples.apps.mlkit.R;
 import com.google.firebase.samples.apps.mlkit.common.CameraSource;
 import com.google.firebase.samples.apps.mlkit.common.CameraSourcePreview;
 import com.google.firebase.samples.apps.mlkit.common.GraphicOverlay;
-import com.google.firebase.samples.apps.mlkit.java.automl.AutoMLImageLabelerProcessor;
-import com.google.firebase.samples.apps.mlkit.java.barcodescanning.BarcodeScanningProcessor;
-import com.google.firebase.samples.apps.mlkit.java.custommodel.CustomImageClassifierProcessor;
-import com.google.firebase.samples.apps.mlkit.java.facedetection.FaceContourDetectorProcessor;
-import com.google.firebase.samples.apps.mlkit.java.facedetection.FaceDetectionProcessor;
-import com.google.firebase.samples.apps.mlkit.java.imagelabeling.ImageLabelingProcessor;
 import com.google.firebase.samples.apps.mlkit.java.objectdetection.ObjectDetectorProcessor;
-import com.google.firebase.samples.apps.mlkit.java.textrecognition.TextRecognitionProcessor;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -84,6 +77,16 @@ public final class LivePreviewActivity extends AppCompatActivity
 
 //    private CustomModelActivity mCustomModelActivity = null;
 //    private FirebaseModelInterpreter firebaseModelInterpreter = null;
+
+    private static boolean isPermissionGranted(Context context, String permission) {
+        if (ContextCompat.checkSelfPermission(context, permission)
+                == PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "Permission granted: " + permission);
+            return true;
+        }
+        Log.i(TAG, "Permission NOT granted: " + permission);
+        return false;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,8 +151,7 @@ public final class LivePreviewActivity extends AppCompatActivity
             while ((mLine = reader.readLine()) != null) {
                 mLabelList.add(mLine);
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Log.e(TAG, e.toString());
         }
 
@@ -197,51 +199,14 @@ public final class LivePreviewActivity extends AppCompatActivity
         }
 
         try {
-            switch (model) {
-                case CLASSIFICATION_QUANT:
-                    Log.i(TAG, "Using Custom Image Classifier (quant) Processor");
-                    cameraSource.setMachineLearningFrameProcessor(new CustomImageClassifierProcessor(this, true));
-                    break;
-                case CLASSIFICATION_FLOAT:
-                    Log.i(TAG, "Using Custom Image Classifier (float) Processor");
-                    cameraSource.setMachineLearningFrameProcessor(new CustomImageClassifierProcessor(this, false));
-                    break;
-                case TEXT_DETECTION:
-                    Log.i(TAG, "Using Text Detector Processor");
-                    cameraSource.setMachineLearningFrameProcessor(new TextRecognitionProcessor());
-                    break;
-                case FACE_DETECTION:
-                    Log.i(TAG, "Using Face Detector Processor");
-                    cameraSource.setMachineLearningFrameProcessor(new FaceDetectionProcessor(getResources()));
-                    break;
-                case AUTOML_IMAGE_LABELING:
-                    cameraSource.setMachineLearningFrameProcessor(new AutoMLImageLabelerProcessor(this));
-                    break;
-                case OBJECT_DETECTION:
-                    Log.i(TAG, "Using Object Detector Processor");
-                    FirebaseVisionObjectDetectorOptions objectDetectorOptions =
-                            new FirebaseVisionObjectDetectorOptions.Builder()
-                                    .setDetectorMode(FirebaseVisionObjectDetectorOptions.STREAM_MODE)
-                                    .enableMultipleObjects()
-                                    .enableClassification().build();
-                    cameraSource.setMachineLearningFrameProcessor(
-                            new ObjectDetectorProcessor(objectDetectorOptions, LivePreviewActivity.this));
-                    break;
-                case BARCODE_DETECTION:
-                    Log.i(TAG, "Using Barcode Detector Processor");
-                    cameraSource.setMachineLearningFrameProcessor(new BarcodeScanningProcessor());
-                    break;
-                case IMAGE_LABEL_DETECTION:
-                    Log.i(TAG, "Using Image Label Detector Processor");
-                    cameraSource.setMachineLearningFrameProcessor(new ImageLabelingProcessor());
-                    break;
-                case FACE_CONTOUR:
-                    Log.i(TAG, "Using Face Contour Detector Processor");
-                    cameraSource.setMachineLearningFrameProcessor(new FaceContourDetectorProcessor());
-                    break;
-                default:
-                    Log.e(TAG, "Unknown model: " + model);
-            }
+            Log.i(TAG, "Using Object Detector Processor");
+            FirebaseVisionObjectDetectorOptions objectDetectorOptions =
+                    new FirebaseVisionObjectDetectorOptions.Builder()
+                            .setDetectorMode(FirebaseVisionObjectDetectorOptions.STREAM_MODE)
+                            .enableMultipleObjects()
+                            .enableClassification().build();
+            cameraSource.setMachineLearningFrameProcessor(
+                    new ObjectDetectorProcessor(objectDetectorOptions, LivePreviewActivity.this));
         } catch (Exception e) {
             Log.e(TAG, "Can not create image processor: " + model, e);
             Toast.makeText(
@@ -346,16 +311,6 @@ public final class LivePreviewActivity extends AppCompatActivity
             createCameraSource(selectedModel);
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
-    private static boolean isPermissionGranted(Context context, String permission) {
-        if (ContextCompat.checkSelfPermission(context, permission)
-                == PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "Permission granted: " + permission);
-            return true;
-        }
-        Log.i(TAG, "Permission NOT granted: " + permission);
-        return false;
     }
 
 }
