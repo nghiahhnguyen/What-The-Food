@@ -65,14 +65,7 @@ public final class LivePreviewActivity extends AppCompatActivity
         implements OnRequestPermissionsResultCallback,
         OnItemSelectedListener,
         CompoundButton.OnCheckedChangeListener {
-    private static final String FACE_DETECTION = "Face Detection";
     private static final String OBJECT_DETECTION = "Object Detection";
-    private static final String AUTOML_IMAGE_LABELING = "AutoML Vision Edge";
-    private static final String TEXT_DETECTION = "Text Detection";
-    private static final String BARCODE_DETECTION = "Barcode Detection";
-    private static final String IMAGE_LABEL_DETECTION = "Label Detection";
-    private static final String CLASSIFICATION_QUANT = "Classification (quantized)";
-    private static final String CLASSIFICATION_FLOAT = "Classification (float)";
     private static final String FACE_CONTOUR = "Face Contour";
     private static final String TAG = "LivePreviewActivity";
     private static final int PERMISSION_REQUESTS = 1;
@@ -81,11 +74,6 @@ public final class LivePreviewActivity extends AppCompatActivity
     private CameraSourcePreview preview;
     private GraphicOverlay graphicOverlay;
     private String selectedModel = FACE_CONTOUR;
-    private List<FirebaseVisionObject> objects;
-    private List<String> labels = new ArrayList<>();
-
-//    private CustomModelActivity mCustomModelActivity = null;
-//    private FirebaseModelInterpreter firebaseModelInterpreter = null;
 
     private static boolean isPermissionGranted(Context context, String permission) {
         if (ContextCompat.checkSelfPermission(context, permission)
@@ -145,26 +133,6 @@ public final class LivePreviewActivity extends AppCompatActivity
         } else {
             getRuntimePermissions();
         }
-    }
-
-    private void setUpFirebase() throws FirebaseMLException {
-        // CONFIGURE FIREBASE CUSTOM MODEL
-        ArrayList<String> mLabelList = new ArrayList<>();
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(
-                    new InputStreamReader(getAssets().open("labels.txt")));
-
-            // do reading, usually loop until end of file reading
-            String mLine;
-            while ((mLine = reader.readLine()) != null) {
-                mLabelList.add(mLine);
-            }
-        } catch (IOException e) {
-            Log.e(TAG, e.toString());
-        }
-
-//        firebaseModelInterpreter = mCustomModelActivity.createInterpreter();
     }
 
     @Override
@@ -321,41 +289,4 @@ public final class LivePreviewActivity extends AppCompatActivity
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
-
-//    @Override
-//    public boolean onTouchEvent(MotionEvent event) {
-//        String TAG_ON_TOUCH = "ON_TOUCH";
-////        Log.d(TAG, "onTouch");
-//        float x = event.getRawX(), y = event.getRawY();
-//        Log.d(TAG_ON_TOUCH, "X: " + x + ", Y: " + y);
-//        for (int i = 0; i < objects.size(); ++i) {
-//            FirebaseVisionObject object = objects.get(i);
-//            Rect boundingBox = object.getBoundingBox();
-//            Log.d(TAG_ON_TOUCH, "Bounding box: " + boundingBox.left + ' ' +
-//                    boundingBox.bottom + ' ' + boundingBox.right + ' ' + boundingBox.top);
-//            if (object.getBoundingBox().contains((int) x, (int) y)) {
-//                Log.d(TAG_ON_TOUCH, "Found food");
-//                Intent intent = new Intent(this, FoodInfoActivity.class);
-//                intent.putExtra("query", labels.get(i));
-//                this.startActivity(intent);
-//                return false;
-//            }
-//        }
-//        Log.d(TAG_ON_TOUCH, "Not found");
-//        return true;
-//    }
-//
-//    public void setObjects(List<FirebaseVisionObject> objects) {
-//        this.objects = objects;
-//    }
-//
-//    public void initializeLabels() {
-//        for (int i = 0; i < 5; ++i) {
-//            this.labels.add("Unknown");
-//        }
-//    }
-//
-//    public void setLabel(int index, String label) {
-//        this.labels.set(index, label);
-//    }
 }

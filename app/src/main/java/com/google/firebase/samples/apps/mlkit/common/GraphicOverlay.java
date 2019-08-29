@@ -60,7 +60,6 @@ public class GraphicOverlay extends View {
     private List<FirebaseVisionObject> objects = null;
     private ArrayList<String> labels;
     private Context context;
-//    private Context context;
 
     public GraphicOverlay(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -177,13 +176,6 @@ public class GraphicOverlay extends View {
      */
     public float scaleY(float vertical) {
         return vertical * heightScaleFactor;
-    }
-
-    /**
-     * Returns the application context of the app.
-     */
-    public Context getApplicationContext() {
-        return getContext().getApplicationContext();
     }
 
     /**

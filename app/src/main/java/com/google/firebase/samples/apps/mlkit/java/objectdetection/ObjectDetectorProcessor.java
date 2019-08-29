@@ -47,7 +47,6 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
         detector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options);
         customModelActivity = new CustomModelActivity(livePreviewActivity);
         this.livePreviewActivity = livePreviewActivity;
-//        mInterpreter = customModelActivity.createInterpreter();
     }
 
     @Override
@@ -100,47 +99,8 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
             assert originalCameraImage != null;
             final Bitmap croppedBitmap = Bitmap.createBitmap(originalCameraImage,
                     croppedRectangle.left, croppedRectangle.top, croppedRectangle.width(), croppedRectangle.height());
-//            AsyncTask.execute(new Runnable() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        customModelActivity.runInference(croppedBitmap);
-//                    } catch (FirebaseMLException e) {
-//                        Log.d(TAG, e.toString());
-//                        e.printStackTrace();
-//                    }
-//                }
-//            });
 
-            // Run inference with the cropped bitmap
-//            final String label = null;
-//            try {
-//                customModelActivity.runInference(croppedBitmap)
-//                        .addOnSuccessListener(
-//                                new OnSuccessListener<List<String>>() {
-//                                    @Override
-//                                    public void onSuccess(List<String> strings) {
-//                                        String label = strings.get(0);
-//                                        Log.d(TAG, label);
-//                                        ObjectGraphic objectGraphic = new ObjectGraphic(graphicOverlay, object, label);
-//                                        graphicOverlay.add(objectGraphic);
-//                                    }
-//                                }
-//                        )
-//                        .addOnFailureListener(
-//                                new OnFailureListener() {
-//                                    @Override
-//                                    public void onFailure(@NonNull Exception e) {
-//                                        Log.d(TAG, "Custom classifier failed: " + e);
-//                                        e.printStackTrace();
-//                                    }
-//                                }
-//                        );
-//            } catch (FirebaseMLException e) {
-//                Log.d(TAG, e.toString());
-//                e.printStackTrace();
-//            }
-            CallableInference callableInference = new CallableInference(croppedBitmap, graphicOverlay, object, i, livePreviewActivity);
+            CallableInference callableInference = new CallableInference(croppedBitmap, graphicOverlay, object, i);
             completionService.submit(callableInference);
         }
         while (remainingFutures > 0) {
@@ -164,18 +124,16 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
         private final GraphicOverlay graphicOverlay;
         private final FirebaseVisionObject object;
         private final int index;
-        private final LivePreviewActivity livePreviewActivity;
 
-        CallableInference(Bitmap croppedBitmap, final GraphicOverlay graphicOverlay, final FirebaseVisionObject object, int index, LivePreviewActivity livePreviewActivity) {
+        CallableInference(Bitmap croppedBitmap, final GraphicOverlay graphicOverlay, final FirebaseVisionObject object, int index) {
             this.croppedBitmap = croppedBitmap;
             this.graphicOverlay = graphicOverlay;
             this.object = object;
             this.index = index;
-            this.livePreviewActivity = livePreviewActivity;
         }
 
         @Override
-        public Void call() throws Exception {
+        public Void call() {
             try {
                 customModelActivity.runInference(croppedBitmap)
                         .addOnSuccessListener(
@@ -183,8 +141,6 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
                                     @Override
                                     public void onSuccess(List<String> strings) {
                                         String label = strings.get(0);
-//                                        Log.d(TAG, label);
-                                        //                                        livePreviewActivity.setLabel(index, label);
                                         if(index < graphicOverlay.getSize()) {
                                             graphicOverlay.setLabel(index, label);
                                         }
