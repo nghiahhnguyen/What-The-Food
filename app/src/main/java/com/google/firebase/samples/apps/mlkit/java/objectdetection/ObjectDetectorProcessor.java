@@ -1,7 +1,5 @@
 package com.google.firebase.samples.apps.mlkit.java.objectdetection;
 
-import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.util.Log;
@@ -22,9 +20,11 @@ import com.google.firebase.samples.apps.mlkit.common.CameraImageGraphic;
 import com.google.firebase.samples.apps.mlkit.common.CustomModelActivity;
 import com.google.firebase.samples.apps.mlkit.common.FrameMetadata;
 import com.google.firebase.samples.apps.mlkit.common.GraphicOverlay;
+import com.google.firebase.samples.apps.mlkit.java.LivePreviewActivity;
 import com.google.firebase.samples.apps.mlkit.java.VisionProcessorBase;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletionService;
@@ -40,15 +40,13 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
     private static final String TAG = "ObjectDetectorProcessor";
 
     private final FirebaseVisionObjectDetector detector;
-
+    LivePreviewActivity livePreviewActivity;
     private CustomModelActivity customModelActivity;
 
-    Context context;
-
-    public ObjectDetectorProcessor(FirebaseVisionObjectDetectorOptions options, Activity livePreviewActivity) throws FirebaseMLException {
+    public ObjectDetectorProcessor(FirebaseVisionObjectDetectorOptions options, LivePreviewActivity livePreviewActivity) throws FirebaseMLException {
         detector = FirebaseVision.getInstance().getOnDeviceObjectDetector(options);
         customModelActivity = new CustomModelActivity(livePreviewActivity);
-        context = livePreviewActivity;
+        this.livePreviewActivity = livePreviewActivity;
 //        mInterpreter = customModelActivity.createInterpreter();
     }
 
@@ -73,10 +71,19 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
             @NonNull List<FirebaseVisionObject> results,
             @NonNull FrameMetadata frameMetadata,
             @NonNull final GraphicOverlay graphicOverlay) {
+        List<FirebaseVisionObject> foodObjects = new ArrayList<>();
+        for (FirebaseVisionObject object : results) {
+            if (object.getClassificationCategory() == FirebaseVisionObject.CATEGORY_FOOD) {
+                foodObjects.add(object);
+            }
+        }
+        results = foodObjects;
         graphicOverlay.clear();
-        graphicOverlay.setContext(context);
+        graphicOverlay.setContext(livePreviewActivity);
         graphicOverlay.setObjects(results);
         graphicOverlay.initializeLabels();
+//        livePreviewActivity.setObjects(results);
+//        livePreviewActivity.initializeLabels();
         if (originalCameraImage != null) {
             CameraImageGraphic imageGraphic = new CameraImageGraphic(graphicOverlay, originalCameraImage);
             graphicOverlay.add(imageGraphic);
@@ -133,7 +140,7 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
 //                Log.d(TAG, e.toString());
 //                e.printStackTrace();
 //            }
-            CallableInference callableInference = new CallableInference(croppedBitmap, graphicOverlay, object, i);
+            CallableInference callableInference = new CallableInference(croppedBitmap, graphicOverlay, object, i, livePreviewActivity);
             completionService.submit(callableInference);
         }
         while (remainingFutures > 0) {
@@ -157,12 +164,14 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
         private final GraphicOverlay graphicOverlay;
         private final FirebaseVisionObject object;
         private final int index;
+        private final LivePreviewActivity livePreviewActivity;
 
-        CallableInference(Bitmap croppedBitmap, final GraphicOverlay graphicOverlay, final FirebaseVisionObject object, int index) {
+        CallableInference(Bitmap croppedBitmap, final GraphicOverlay graphicOverlay, final FirebaseVisionObject object, int index, LivePreviewActivity livePreviewActivity) {
             this.croppedBitmap = croppedBitmap;
             this.graphicOverlay = graphicOverlay;
             this.object = object;
             this.index = index;
+            this.livePreviewActivity = livePreviewActivity;
         }
 
         @Override
@@ -175,7 +184,10 @@ public class ObjectDetectorProcessor extends VisionProcessorBase<List<FirebaseVi
                                     public void onSuccess(List<String> strings) {
                                         String label = strings.get(0);
 //                                        Log.d(TAG, label);
-                                        graphicOverlay.setLabel(index, label);
+                                        //                                        livePreviewActivity.setLabel(index, label);
+                                        if(index < graphicOverlay.getSize()) {
+                                            graphicOverlay.setLabel(index, label);
+                                        }
                                         ObjectGraphic objectGraphic = new ObjectGraphic(graphicOverlay, object, label);
                                         graphicOverlay.add(objectGraphic);
                                     }

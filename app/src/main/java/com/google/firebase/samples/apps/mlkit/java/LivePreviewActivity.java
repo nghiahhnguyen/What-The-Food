@@ -14,11 +14,14 @@
 package com.google.firebase.samples.apps.mlkit.java;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.Rect;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemSelectedListener;
@@ -36,7 +39,9 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.annotation.KeepName;
 import com.google.firebase.ml.common.FirebaseMLException;
+import com.google.firebase.ml.vision.objects.FirebaseVisionObject;
 import com.google.firebase.ml.vision.objects.FirebaseVisionObjectDetectorOptions;
+import com.google.firebase.samples.apps.mlkit.FoodInfoActivity;
 import com.google.firebase.samples.apps.mlkit.R;
 import com.google.firebase.samples.apps.mlkit.common.CameraSource;
 import com.google.firebase.samples.apps.mlkit.common.CameraSourcePreview;
@@ -46,8 +51,10 @@ import com.google.firebase.samples.apps.mlkit.java.objectdetection.ObjectDetecto
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.AbstractCollection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * Demo app showing the various features of ML Kit for Firebase. This class is used to
@@ -74,6 +81,8 @@ public final class LivePreviewActivity extends AppCompatActivity
     private CameraSourcePreview preview;
     private GraphicOverlay graphicOverlay;
     private String selectedModel = FACE_CONTOUR;
+    private List<FirebaseVisionObject> objects;
+    private List<String> labels = new ArrayList<>();
 
 //    private CustomModelActivity mCustomModelActivity = null;
 //    private FirebaseModelInterpreter firebaseModelInterpreter = null;
@@ -313,4 +322,40 @@ public final class LivePreviewActivity extends AppCompatActivity
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
+//    @Override
+//    public boolean onTouchEvent(MotionEvent event) {
+//        String TAG_ON_TOUCH = "ON_TOUCH";
+////        Log.d(TAG, "onTouch");
+//        float x = event.getRawX(), y = event.getRawY();
+//        Log.d(TAG_ON_TOUCH, "X: " + x + ", Y: " + y);
+//        for (int i = 0; i < objects.size(); ++i) {
+//            FirebaseVisionObject object = objects.get(i);
+//            Rect boundingBox = object.getBoundingBox();
+//            Log.d(TAG_ON_TOUCH, "Bounding box: " + boundingBox.left + ' ' +
+//                    boundingBox.bottom + ' ' + boundingBox.right + ' ' + boundingBox.top);
+//            if (object.getBoundingBox().contains((int) x, (int) y)) {
+//                Log.d(TAG_ON_TOUCH, "Found food");
+//                Intent intent = new Intent(this, FoodInfoActivity.class);
+//                intent.putExtra("query", labels.get(i));
+//                this.startActivity(intent);
+//                return false;
+//            }
+//        }
+//        Log.d(TAG_ON_TOUCH, "Not found");
+//        return true;
+//    }
+//
+//    public void setObjects(List<FirebaseVisionObject> objects) {
+//        this.objects = objects;
+//    }
+//
+//    public void initializeLabels() {
+//        for (int i = 0; i < 5; ++i) {
+//            this.labels.add("Unknown");
+//        }
+//    }
+//
+//    public void setLabel(int index, String label) {
+//        this.labels.set(index, label);
+//    }
 }

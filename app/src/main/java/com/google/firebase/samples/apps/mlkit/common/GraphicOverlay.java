@@ -16,6 +16,7 @@ package com.google.firebase.samples.apps.mlkit.common;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -47,7 +48,7 @@ import java.util.List;
  * coordinate from the preview's coordinate system to the view coordinate system.
  * </ol>
  */
-public class GraphicOverlay extends View implements View.OnTouchListener {
+public class GraphicOverlay extends View {
     private static final String TAG = "GraphicOverlay";
     private final Object lock = new Object();
     private final List<Graphic> graphics = new ArrayList<>();
@@ -59,6 +60,7 @@ public class GraphicOverlay extends View implements View.OnTouchListener {
     private List<FirebaseVisionObject> objects = null;
     private ArrayList<String> labels;
     private Context context;
+//    private Context context;
 
     public GraphicOverlay(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -66,18 +68,26 @@ public class GraphicOverlay extends View implements View.OnTouchListener {
 
     public void initializeLabels() {
         labels = new ArrayList<>();
-        for (int i = 0; i < 6; ++i) {
+        for (int i = 0; i < 5; ++i) {
             labels.add("Unknown");
         }
     }
 
     @Override
-    public boolean onTouch(View v, MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) {
         Log.d(TAG, "onTouch");
         float x = event.getX(), y = event.getY();
         for (int i = 0; i < objects.size(); ++i) {
+            if (labels.get(i).equals("Unknown"))
+                break;
+
             FirebaseVisionObject object = objects.get(i);
-            if (object.getBoundingBox().contains((int) x, (int) y)) {
+            RectF rect = new RectF(object.getBoundingBox());
+            rect.left = translateX(rect.left);
+            rect.top = translateY(rect.top);
+            rect.right = translateX(rect.right);
+            rect.bottom = translateY(rect.bottom);
+            if (rect.contains((int) x, (int) y)) {
                 Intent intent = new Intent(context, FoodInfoActivity.class);
                 intent.putExtra("query", labels.get(i));
                 context.startActivity(intent);
@@ -155,9 +165,56 @@ public class GraphicOverlay extends View implements View.OnTouchListener {
         }
     }
 
+    /**
+     * Adjusts a horizontal value of the supplied value from the preview scale to the view scale.
+     */
+    public float scaleX(float horizontal) {
+        return horizontal * widthScaleFactor;
+    }
+
+    /**
+     * Adjusts a vertical value of the supplied value from the preview scale to the view scale.
+     */
+    public float scaleY(float vertical) {
+        return vertical * heightScaleFactor;
+    }
+
+    /**
+     * Returns the application context of the app.
+     */
+    public Context getApplicationContext() {
+        return getContext().getApplicationContext();
+    }
+
+    /**
+     * Adjusts the x coordinate from the preview's coordinate system to the view coordinate system.
+     */
+    public float translateX(float x) {
+        if (facing == CameraSource.CAMERA_FACING_FRONT) {
+            return getWidth() - scaleX(x);
+        } else {
+            return scaleX(x);
+        }
+    }
+
+    /**
+     * Adjusts the y coordinate from the preview's coordinate system to the view coordinate system.
+     */
+    public float translateY(float y) {
+        return scaleY(y);
+    }
+
     public void setContext(Context context) {
         this.context = context;
     }
+
+    public int getSize() {
+        return labels.size();
+    }
+
+//    public void setContext(Context context) {
+//        this.context = context;
+//    }
 
     /**
      * Base class for a custom graphics object to be rendered within the graphic overlay. Subclass
