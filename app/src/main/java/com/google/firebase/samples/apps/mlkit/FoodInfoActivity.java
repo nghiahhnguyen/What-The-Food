@@ -68,8 +68,7 @@ public class FoodInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_food_info);
 
         Intent intent = getIntent();
-        this.query = intent.getStringExtra("query");
-
+        this.query = intent.getStringExtra("query").replace('_', ' ');
         // set up carousel view
         carouselView = (CarouselView) findViewById(R.id.carouselView);
         carouselView.setPageCount(5);
