@@ -25,7 +25,7 @@ Scan for food in image in real-time => User can read info about the food => User
 - Improving the model for food recognition and classification. I am thinking about trying a YOLO model, which should improve the accuracy from our current model - Conv Net.
 
 ### Demo:
-[![Demo of the app](https://github.com/huunghia160799/What-The-Food/blob/master/what-the-food-demo.gif)]
+![Demo of the app](https://github.com/huunghia160799/What-The-Food/blob/master/what-the-food-demo.gif)
 
 License
 -------
