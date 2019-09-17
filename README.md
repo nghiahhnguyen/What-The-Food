@@ -1,6 +1,31 @@
 What The Food 101
 ==============================
 
+### Idea: 
+Scan for food in image in real-time => User can read info about the food => User can book the food through Foody.vn website.
+
+### Main features:
+- Firebase ML Kit Object Detection Integration
+- Training a Food Classification model with Tensorflow
+- Convert the model to TFLite
+- Integrate model to classify output by Firebase ML Kit as food categories
+- Handling Asynchronous nature of Inference by the model
+- Carousel view with image
+- Network handling and Http request with Volley library
+- Get API from Shutterstock 
+- Get image by Picasso library
+- Combine 6, 7, 8, 9
+- food_info database for 101 types of food
+- Firestore from Firebase  
+
+### Drawback:
+- The model is not extremely accurate. Therefore, it can predict the wrong type of food.
+
+### Future works:
+- Improving the model for food recognition and classification. I am thinking about trying a YOLO model, which should improve the accuracy from our current model - Conv Net.
+
+### Demo:
+
 License
 -------
 
