@@ -15,7 +15,7 @@ Scan for food in image in real-time => User can read info about the food => User
 - Get API from Shutterstock 
 - Get image by Picasso library
 - Combine 6, 7, 8, 9
-- food_info database for 101 types of food
+- Food info database for 101 types of food
 - Firestore from Firebase  
 
 ### Drawback:
