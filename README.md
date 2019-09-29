@@ -11,8 +11,8 @@ Scan for food in image in real-time => User can read info about the food => User
 - Integrate model to classify output by Firebase ML Kit as food categories
 - Handling Asynchronous nature of Inference by the model
 - Carousel view with image
-- Network handling and Http request with Volley library
-- Get API from Shutterstock 
+- Network handling and HTTP request with Volley library
+- Use API from Shutterstock to build 
 - Get image by Picasso library
 - Food info database for 101 types of food
 - Firestore from Firebase  
