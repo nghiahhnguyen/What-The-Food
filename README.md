@@ -17,7 +17,7 @@ Scan for food in image in real-time => User can read info about the food => User
 - Food info database for 101 types of food
 - Firestore from Firebase  
 
-### Drawback:
+### Drawbacks:
 - The model is not extremely accurate. Therefore, it can predict the wrong type of food.
 
 ### Future works:
